@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한국일보 데이터 수집 구조 및 이슈 현황</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F7F6F2;color:#1a1a1a;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.d{padding:32px 20px 48px;max-width:680px;margin:0 auto}
+
+/* 문서 헤더 */
+.doc-hd{margin-bottom:16px;padding-bottom:16px;border-bottom:1.5px solid #E4E1D7}
+.doc-badge{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;color:#4A42B0;background:#EEEDFE;border:1px solid #C4BFEF;border-radius:20px;padding:3px 10px;letter-spacing:0.02em;margin-bottom:10px}
+.doc-title{font-size:24px;font-weight:800;color:#0F1117;letter-spacing:-0.05em;line-height:1.25;margin-bottom:6px}
+.doc-sub{font-size:12.5px;color:#6B7280;font-weight:400}
+
+/* 작업 설명 */
+.desc-para{background:#F0EFFE;border-left:3px solid #7A72DA;border-radius:0 10px 10px 0;padding:12px 15px;margin-bottom:22px;font-size:12.5px;line-height:1.75;color:#2D2760;word-break:keep-all}
+.desc-para strong{font-weight:800;color:#221C58}
+
+/* 다이어그램 헤더 */
+.diag-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.diag-hd::before,.diag-hd::after{content:'';flex:1;height:1px;background:rgba(0,0,0,0.1)}
+.diag-hd-lbl{font-size:9.5px;font-weight:700;color:#888;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap}
+
+/* 홈페이지 노드 */
+.hp{background:linear-gradient(145deg,#EEEDFE,#E5E2FC);border:2px solid #6760D0;border-radius:14px;padding:15px 24px;text-align:center;box-shadow:0 3px 16px rgba(83,74,183,0.12)}
+.hp-t{font-size:15px;font-weight:800;color:#221C58;letter-spacing:-0.04em}
+.hp-s{font-size:11px;color:#4840A0;margin-top:3px;font-weight:500}
+
+/* 분기 화살표 */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.branch-row{margin-top:2px}
+.bc{height:22px;display:flex;flex-direction:column;align-items:center}
+.bc::before{content:'';width:1px;height:14px;background:#999;opacity:0.35}
+.bc::after{content:'▾';font-size:11px;color:#888;opacity:0.35;line-height:1}
+.bc-ev{height:auto;display:flex;flex-direction:column;align-items:center;gap:0}
+.ev-line{width:1px;background:#999;opacity:0.35;flex-shrink:0}
+.ev-line.top{height:8px}
+.ev-line.bot{height:8px}
+.ev-tag{font-size:10px;font-weight:700;color:#4A42B0;background:#EEEDFE;border:1px solid #C4BFEF;border-radius:8px;padding:2px 7px;text-align:center;white-space:normal;word-break:keep-all;letter-spacing:0.01em;flex-shrink:0;line-height:1.4}
+.ev-arr{font-size:11px;color:#888;opacity:0.35;line-height:1;flex-shrink:0}
+
+/* 수집 경로 구분선 */
+.layer-sep{display:flex;align-items:center;gap:8px;margin:4px 0 8px}
+.layer-sep::before,.layer-sep::after{content:'';flex:1;height:1px;background:rgba(83,74,183,0.22)}
+.layer-lbl{font-size:9.5px;font-weight:700;color:#534AB7;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap}
+
+/* 컬럼 */
+.col-wrap{align-items:stretch}
+.col{display:flex;flex-direction:column}
+
+/* 카드 */
+.card{border-radius:12px;padding:14px 12px;border:1.5px solid;flex-shrink:0;transition:box-shadow .2s,transform .2s;cursor:default}
+.card:hover{transform:translateY(-2px)}
+.ct{font-size:13px;font-weight:800;letter-spacing:-0.04em;margin-bottom:2px;word-break:keep-all}
+.cs{font-size:10px;margin-bottom:12px;line-height:1.45;word-break:keep-all;font-weight:500;opacity:0.7}
+
+/* 단계 */
+.step{padding-top:9px;border-top:1px solid rgba(0,0,0,0.07)}
+.step:first-child{padding-top:0;border-top:none}
+.sl{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.sn{width:20px;height:20px;border-radius:6px;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:-0.03em}
+.st{font-size:11.5px;font-weight:700;letter-spacing:-0.03em;word-break:keep-all}
+.sd{font-size:10px;line-height:1.5;margin-left:27px;margin-bottom:5px;word-break:keep-all;opacity:0.75}
+
+/* 이슈 뱃지 */
+.iss{display:flex;align-items:flex-start;gap:6px;border-radius:6px;padding:5px 8px;margin-bottom:4px;font-size:10.5px;font-weight:600;line-height:1.35;word-break:keep-all}
+.iss:last-child{margin-bottom:0}
+.dot{width:5.5px;height:5.5px;border-radius:50%;flex-shrink:0;margin-top:3.5px}
+.id{display:block;font-size:9px;font-weight:400;margin-top:1px;opacity:0.65}
+.ir{background:#FEF0F0;border:1px solid #F2A4A4;color:#771E1E}.ir .dot{background:#E24B4A}
+.ig{background:#EBF5E0;border:1px solid #82BC50;color:#274D0D}.ig .dot{background:#3D7E15}
+
+/* 내부 구조 */
+.int-note{border:1px dashed;border-radius:9px;padding:10px 10px 10px 12px;margin-top:4px;display:flex;flex-direction:column;gap:7px}
+.int-step{display:flex;align-items:center;gap:6px}
+.int-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;opacity:0.38}
+.int-lbl{font-size:9.5px;font-weight:600;word-break:keep-all;opacity:0.65}
+.int-hint{font-size:9px;font-weight:500;opacity:0.35;text-align:center;letter-spacing:0.02em;margin-top:1px}
+
+/* 카드 컬러 */
+.pu{background:#F5F4FE;border-color:#7A72DA;box-shadow:0 2px 10px rgba(83,74,183,0.08)}.pu:hover{box-shadow:0 8px 24px rgba(83,74,183,0.16)}
+.pu .ct{color:#221C58}.pu .cs,.pu .sd{color:#3E368A}.pu .st{color:#221C58}.pu .sn{background:#534AB7}
+.pu .int-note{border-color:#AFA9EC}.pu .int-dot{background:#534AB7}.pu .int-lbl{color:#3C3489}
+.bl{background:#EAF3FC;border-color:#4A93D4;box-shadow:0 2px 10px rgba(55,138,221,0.08)}.bl:hover{box-shadow:0 8px 24px rgba(55,138,221,0.16)}
+.bl .ct{color:#032542}.bl .cs,.bl .sd{color:#155490}.bl .st{color:#032542}.bl .sn{background:#2F82CC}
+.gy{background:#EEECEA;border-color:#9B9890;box-shadow:0 2px 10px rgba(120,118,110,0.08)}.gy:hover{box-shadow:0 8px 24px rgba(120,118,110,0.16)}
+.gy .ct{color:#252523}.gy .cs,.gy .sd{color:#4A4A47}.gy .st{color:#252523}.gy .sn{background:#7E7C74}
+.gy .int-note{border-color:#C2BFB7}.gy .int-dot{background:#888780}.gy .int-lbl{color:#444441}
+.tl{background:#E1F5EF;border-color:#20A87C;box-shadow:0 2px 10px rgba(29,158,117,0.08)}.tl:hover{box-shadow:0 8px 24px rgba(29,158,117,0.16)}
+.tl .ct{color:#033028}.tl .cs,.tl .sd{color:#0D6550}.tl .st{color:#033028}.tl .sn{background:#1D9E75}
+.tl .int-note{border-color:#68CAA7}.tl .int-dot{background:#1D9E75}.tl .int-lbl{color:#0F6E56}
+
+/* 연결선 */
+.spacer{flex:1;display:flex;flex-direction:column;align-items:center;padding:4px 0;min-height:24px}
+.sline{flex:1;width:1px;background:#AAA;opacity:0.28;min-height:12px}
+.sarr{font-size:11px;opacity:0.3;color:#555;line-height:1;flex-shrink:0;margin-top:1px}
+.ga4-node{background:#E2EEF9;border:1.5px solid #5B9FD4;border-radius:9px;padding:8px 10px;text-align:center;flex-shrink:0;margin:2px 0}
+.ga4-t{font-size:11px;font-weight:800;color:#032542;letter-spacing:-0.03em}
+.ga4-s{font-size:9px;color:#155490;margin-top:2px;font-weight:500}
+
+/* 저장소 박스 */
+.dc{border-radius:9px;border:1px solid;flex-shrink:0}
+.dt{font-size:10.5px;font-weight:700;word-break:keep-all;letter-spacing:-0.02em;text-align:center}
+.ds{font-size:9.5px;margin-top:2px;word-break:keep-all;font-weight:400;text-align:center}
+.pud{background:#EEEDFE;border-color:#AFA9EC;padding:9px 10px}.pud .dt{color:#221C58}.pud .ds{color:#3C3489}
+.bld{background:#E5F0FB;border-color:#85B7EB;padding:9px 10px}.bld .dt{color:#032542}.bld .ds{color:#155490}
+.gyd{background:#F0EEE9;border-color:#B4B2A9;padding:9px 10px}.gyd .dt{color:#252523}.gyd .ds{color:#454542}
+.tld{background:#DFF4EC;border-color:#5DCAA5}
+.sf-wrap{padding:9px 10px 10px}
+.sf-wrap .dt{color:#033028;margin-bottom:7px}
+.sf-rule{height:1px;background:rgba(29,158,117,0.22);margin:0 -2px 7px}
+.sf-cloud{margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(29,158,117,0.12)}
+.sf-cloud:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.sf-cn{font-size:10px;font-weight:700;color:#0F6E56;letter-spacing:-0.02em}
+.sf-cd{font-size:9px;color:#1D9E75;margin-top:1.5px;font-weight:500;opacity:0.85}
+
+/* 합류 화살표 */
+.merge-vlines{margin-top:0}
+.mv{display:flex;justify-content:center}
+.mv::before{content:'';width:1px;height:14px;background:#BBB;opacity:0.3}
+.merge-h{height:1px;background:#BBB;opacity:0.28;margin:0 12%}
+.merge-down{display:flex;flex-direction:column;align-items:center;padding:2px 0 5px}
+.merge-down::before{content:'';width:1px;height:10px;background:#BBB;opacity:0.3}
+.merge-down::after{content:'▾';font-size:12px;color:#888;opacity:0.36;line-height:1}
+
+/* 분석 도구 */
+.anl{background:#EEECEA;border:1.5px solid #9A9790;border-radius:12px;padding:12px 18px;text-align:center;box-shadow:0 2px 10px rgba(120,118,110,0.10)}
+.anl-t{font-size:12.5px;font-weight:700;color:#252523;word-break:keep-all;letter-spacing:-0.02em}
+.anl-s{font-size:10.5px;color:#555552;margin-top:3px;font-weight:500}
+
+/* 이벤트 예시 박스 */
+.ev-sample{background:#F5F4FE;border:1.5px solid #AFA9EC;border-radius:12px;padding:16px;margin-top:20px}
+.ev-sample-hd{font-size:12px;font-weight:800;color:#221C58;margin-bottom:4px;letter-spacing:-0.03em}
+.ev-sample-sub{font-size:10.5px;color:#534AB7;margin-bottom:12px;line-height:1.65;word-break:keep-all}
+.ev-sample-sub strong{font-weight:700;color:#221C58}
+.ev-name-tag{display:inline-flex;align-items:center;background:#534AB7;color:#fff;font-size:10px;font-weight:700;border-radius:6px;padding:2px 9px;margin-bottom:10px;letter-spacing:0.02em}
+.ev-tbl{width:100%;border-collapse:collapse;font-size:10px}
+.ev-tbl th{text-align:left;font-weight:700;color:#3C3489;padding:6px 8px;background:#EEEDFE;border-bottom:1px solid #C4BFEF}
+.ev-tbl th:first-child{border-radius:6px 0 0 0;width:36%}
+.ev-tbl th:last-child{border-radius:0 6px 0 0}
+.ev-tbl td{padding:5px 8px;color:#2D2760;border-bottom:1px solid rgba(167,161,236,0.2);word-break:break-all;line-height:1.5}
+.ev-tbl tr:last-child td{border-bottom:none}
+.ev-tbl td:first-child{font-weight:600;color:#3C3489;word-break:keep-all}
+.ev-note{font-size:9.5px;color:#534AB7;margin-top:8px;opacity:0.6;text-align:right}
+
+/* 용어 설명 */
+.glossary{background:#F5F4FE;border:1px solid #E0DDFB;border-radius:10px;padding:11px 14px;margin-top:16px;display:flex;flex-direction:column;gap:5px}
+.gl-row{display:flex;align-items:baseline;gap:6px}
+.gl-term{font-size:10px;font-weight:800;color:#221C58;white-space:nowrap}
+.gl-sep{font-size:10px;color:#AFA9EC;flex-shrink:0}
+.gl-def{font-size:10px;color:#534AB7;font-weight:400;word-break:keep-all;line-height:1.5}
+
+/* 범례 */
+.legend{display:flex;gap:14px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#4B5563}
+.ld{width:7px;height:7px;border-radius:50%}
+
+/* 애니메이션 */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.doc-hd    {animation:fadeUp .3s ease .08s both}
+.desc-para {animation:fadeUp .3s ease .12s both}
+.diag-hd   {animation:fadeUp .3s ease .16s both}
+.hp        {animation:fadeUp .35s ease .20s both}
+.branch-row{animation:fadeUp .3s ease .25s both}
+.layer-sep {animation:fadeUp .3s ease .28s both}
+.col-wrap  {animation:fadeUp .4s ease .32s both}
+.merge-vlines,.merge-h,.merge-down{animation:fadeUp .3s ease .42s both}
+.anl       {animation:fadeUp .35s ease .46s both}
+.ev-sample {animation:fadeUp .35s ease .50s both}
+.glossary  {animation:fadeUp .3s ease .54s both}
+.legend    {animation:fadeUp .3s ease .58s both}
+
+/* 반응형 */
+@media(max-width:540px){
+  .g4,.col-wrap{grid-template-columns:repeat(2,1fr)}
+  .merge-h{margin:0 25%}
+  .doc-title{font-size:20px}
+}
+</style>
+</head>
+<body>
+<div class="d">
+
+<!-- 문서 헤더 -->
+<div class="doc-hd">
+  <div class="doc-badge">AI &amp; 데이터팀</div>
+  <h1 class="doc-title">한국일보 데이터 수집 구조</h1>
+  <p class="doc-sub">수집 경로별 구조 및 정합성 검토 현황 · 1/28 뉴플랫폼 개편 이후</p>
+</div>
+
+<!-- 작업 설명 -->
+<div class="desc-para">
+  Hmap 2.0에서 수집하는 <strong>16개 이벤트</strong> 각각에 대해, 기사ID · 회원번호 · 세션ID · URL · 기기 · 유입경로 · 클릭값 등 주요 필드가 빠짐없이 정확하게 수집되고 있는지 확인하는 작업이 필요합니다.
+</div>
+
+<!-- 다이어그램 -->
+<div class="diag-hd"><span class="diag-hd-lbl">수집 흐름</span></div>
+
+<div class="hp">
+  <div class="hp-t">한국일보 홈페이지</div>
+  <div class="hp-s">아래 모든 수집 경로의 공통 출발점</div>
+</div>
+
+<!-- 분기 화살표 (4컬럼 뱃지) -->
+<div class="g4 branch-row">
+  <div class="bc-ev">
+    <div class="ev-line top"></div>
+    <div class="ev-tag">이벤트 16종 검수 필요</div>
+    <div class="ev-line bot"></div>
+    <div class="ev-arr">▾</div>
+  </div>
+  <div class="bc-ev">
+    <div class="ev-line top"></div>
+    <div class="ev-tag">태그·파라미터 검수 필요</div>
+    <div class="ev-line bot"></div>
+    <div class="ev-arr">▾</div>
+  </div>
+  <div class="bc-ev">
+    <div class="ev-line top"></div>
+    <div class="ev-tag">수집 구조 파악 필요</div>
+    <div class="ev-line bot"></div>
+    <div class="ev-arr">▾</div>
+  </div>
+  <div class="bc-ev">
+    <div class="ev-line top"></div>
+    <div class="ev-tag">수집 구조 파악 필요</div>
+    <div class="ev-line bot"></div>
+    <div class="ev-arr">▾</div>
+  </div>
+</div>
+
+<div class="layer-sep"><span class="layer-lbl">수집 경로</span></div>
+
+<div class="g4 col-wrap">
+
+  <!-- Hmap 2.0 -->
+  <div class="col">
+    <div class="card pu">
+      <div class="ct">Hmap 2.0</div>
+      <div class="cs">자체 행동 수집 스크립트</div>
+      <div class="step">
+        <div class="sl"><span class="sn">1</span><span class="st">페이지 값 읽기</span></div>
+        <div class="iss ir"><span class="dot"></span><span>체류시간 정합성 이슈<span class="id">1/28~현재</span><span class="id">article_scroll2 수집 저하로 발생</span></span></div>
+        <div class="iss ir"><span class="dot"></span><span>방문당 PV 산출 불가<span class="id">4/9~현재</span><span class="id">session_start2 급감으로 발생</span></span></div>
+        <div class="iss ig"><span class="dot"></span><span>통합회원번호 수집<span class="id">해결 완료 · 2/27</span><span class="id">로그인 회원 join_id 빈값 적재</span></span></div>
+      </div>
+      <div class="step">
+        <div class="sl"><span class="sn">2</span><span class="st">이벤트 객체 구성</span></div>
+        <div class="iss ig"><span class="dot"></span><span>추천·관련 클릭 구분<span class="id">해결 완료 · 3/11</span><span class="id">CSS 클래스 혼재로 식별 불가</span></span></div>
+        <div class="iss ig"><span class="dot"></span><span>공유 버튼 클릭 수집<span class="id">해결 완료 · 4/28</span><span class="id">SNS 종류 구분 없이 수집</span></span></div>
+      </div>
+      <div class="step">
+        <div class="sl"><span class="sn">3</span><span class="st">HTTP 전송</span></div>
+      </div>
+    </div>
+    <div class="spacer"><div class="sline"></div><div class="sarr">↓</div></div>
+    <div class="dc pud"><div class="dt">AWS S3 · Athena</div><div class="ds">로그 저장 · SQL 조회</div></div>
+  </div>
+
+  <!-- GTM → GA4 → BigQuery -->
+  <div class="col">
+    <div class="card bl">
+      <div class="ct">GTM</div>
+      <div class="cs">구글 태그 매니저</div>
+      <div class="step">
+        <div class="sl"><span class="sn">1</span><span class="st">페이지 값 확인</span></div>
+        <div class="sd">페이지 주소, 기사 정보, 클릭 위치 등 확인</div>
+      </div>
+      <div class="step">
+        <div class="sl"><span class="sn">2</span><span class="st">태그 실행</span></div>
+        <div class="sd">GTM 조건에 맞는 페이지뷰·클릭 이벤트 실행</div>
+      </div>
+      <div class="step">
+        <div class="sl"><span class="sn">3</span><span class="st">GA4로 전송</span></div>
+        <div class="sd">GA4 이벤트로 전송되어 BigQuery에서 확인</div>
+      </div>
+    </div>
+    <div class="spacer"><div class="sline"></div></div>
+    <div class="ga4-node"><div class="ga4-t">GA4</div><div class="ga4-s">이벤트 수집 · 분석</div></div>
+    <div class="spacer"><div class="sline"></div><div class="sarr">↓</div></div>
+    <div class="dc bld"><div class="dt">BigQuery</div><div class="ds">GA4 원본 로그</div></div>
+  </div>
+
+  <!-- HERB -->
+  <div class="col">
+    <div class="card gy">
+      <div class="ct">HERB</div>
+      <div class="cs">트래픽 수집 경로</div>
+      <div class="int-note">
+        <div class="int-step"><span class="int-dot"></span><span class="int-lbl">내부 수집 단계 존재</span></div>
+        <div class="int-step"><span class="int-dot"></span><span class="int-lbl">PV · 방문자 집계</span></div>
+        <div class="int-step"><span class="int-dot"></span><span class="int-lbl">운영 기준 지표 산출</span></div>
+        <div class="int-hint">세부 구조 별도 관리</div>
+      </div>
+    </div>
+    <div class="spacer"><div class="sline"></div><div class="sarr">↓</div></div>
+    <div class="dc gyd"><div class="dt">HERB DB</div><div class="ds">트래픽 집계</div></div>
+  </div>
+
+  <!-- Salesforce -->
+  <div class="col">
+    <div class="card tl">
+      <div class="ct">Salesforce</div>
+      <div class="cs">회원 행동 수집 경로</div>
+      <div class="int-note">
+        <div class="int-step"><span class="int-dot"></span><span class="int-lbl">내부 수집 단계 존재</span></div>
+        <div class="int-step"><span class="int-dot"></span><span class="int-lbl">가입 · 구독 · 로그인</span></div>
+        <div class="int-step"><span class="int-dot"></span><span class="int-lbl">회원 식별값 연계</span></div>
+        <div class="int-hint">세부 구조 별도 관리</div>
+      </div>
+    </div>
+    <div class="spacer"><div class="sline"></div><div class="sarr">↓</div></div>
+    <div class="dc tld sf-wrap">
+      <div class="dt">Salesforce Platform</div>
+      <div class="sf-rule"></div>
+      <div class="sf-cloud"><div class="sf-cn">Service Cloud</div><div class="sf-cd">회원 CS · 케이스 관리</div></div>
+      <div class="sf-cloud"><div class="sf-cn">Data Cloud</div><div class="sf-cd">고객 데이터 통합 (CDP)</div></div>
+      <div class="sf-cloud"><div class="sf-cn">Marketing Cloud</div><div class="sf-cd">이메일 · 발송 자동화</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 합류 → 분석 도구 -->
+<div class="g4 merge-vlines" style="margin-top:4px">
+  <div class="mv"></div><div class="mv"></div><div class="mv"></div><div class="mv"></div>
+</div>
+<div class="merge-h"></div>
+<div class="merge-down"></div>
+
+<div class="anl">
+  <div class="anl-t">Python · DBeaver · Looker Studio · Tableau · Google Sheets</div>
+  <div class="anl-s">지표 산출 · 대시보드 · 보고</div>
+</div>
+
+<!-- 이벤트 예시 박스 -->
+<div class="ev-sample">
+  <div class="ev-sample-hd">이벤트 하나에 담기는 정보</div>
+  <div class="ev-sample-sub">이벤트 1건은 단순한 클릭 기록이 아닙니다. 아래는 <strong>page_view2</strong> 이벤트의 실제 수집값 일부로, 전체 필드는 70개 이상입니다. 16개 이벤트 각각에 대해 이 필드들이 빠짐없이 수집되고 있는지 확인하는 것이 이번 검수의 범위입니다.</div>
+  <div class="ev-name-tag">page_view2 · 실제 수집 예시</div>
+  <table class="ev-tbl">
+    <thead>
+      <tr><th>필드</th><th>수집값</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>event</td><td>page_view2</td></tr>
+      <tr><td>session_id</td><td>20260508011601</td></tr>
+      <tr><td>article_id</td><td>201610171229112952</td></tr>
+      <tr><td>headline</td><td>강미나-최유정, 신나게 춤춰요</td></tr>
+      <tr><td>content_category</td><td>사회</td></tr>
+      <tr><td>page_referrer</td><td>https://m.search.naver.com/</td></tr>
+      <tr><td>operating_system</td><td>iOS</td></tr>
+      <tr><td>login_yn</td><td>N</td></tr>
+    </tbody>
+  </table>
+  <div class="ev-note">전체 70개 필드 중 8개 표시</div>
+</div>
+
+<!-- 용어 설명 -->
+<div class="glossary">
+  <div class="gl-row"><span class="gl-term">이벤트</span><span class="gl-sep">—</span><span class="gl-def">사용자 행동 발생 시 수집되는 단위 데이터</span></div>
+  <div class="gl-row"><span class="gl-term">태그</span><span class="gl-sep">—</span><span class="gl-def">이벤트를 GA4로 전송하는 GTM 실행 규칙</span></div>
+  <div class="gl-row"><span class="gl-term">파라미터</span><span class="gl-sep">—</span><span class="gl-def">이벤트와 함께 수집되는 부가 정보</span></div>
+</div>
+
+<div class="legend">
+  <div class="li"><span class="ld" style="background:#E24B4A"></span>진행 중</div>
+  <div class="li"><span class="ld" style="background:#3D7E15"></span>해결 완료</div>
+</div>
+
+</div>
+</body>
+</html>
